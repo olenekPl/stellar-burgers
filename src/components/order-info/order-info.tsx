@@ -2,22 +2,22 @@ import { FC, useMemo } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useSelector } from '../../services/store';
+import { useLocation } from 'react-router-dom';
 
 export const OrderInfo: FC = () => {
   /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const location = useLocation();
+  const orderData =
+    location.pathname === '/profile/orders/:number'
+      ? useSelector((state) => state.burgers.myOrderModalData)
+      : useSelector((state) => state.burgers.orderData);
 
-  const ingredients: TIngredient[] = [];
+  const ingredients: TIngredient[] = useSelector(
+    (state) => state.burgers.ingridients
+  );
 
-  /* Готовим данные для отображения */
+  /* готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 

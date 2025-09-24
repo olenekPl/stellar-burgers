@@ -8,21 +8,28 @@ export const IngredientsCategory = forwardRef<
   TIngredientsCategoryProps
 >(({ title, titleRef, ingredients }, ref) => {
   /** TODO: взять переменную из стора */
+  let bunsId: string[] = [];
+  if (title === 'Булки') {
+    bunsId = ingredients.map((el) => el._id);
+  }
   const burgerConstructor = {
     bun: {
-      _id: ''
+      _id: bunsId
     },
-    ingredients: []
+    ingredients: ingredients
   };
 
   const ingredientsCounters = useMemo(() => {
     const { bun, ingredients } = burgerConstructor;
+
     const counters: { [key: string]: number } = {};
+
     ingredients.forEach((ingredient: TIngredient) => {
       if (!counters[ingredient._id]) counters[ingredient._id] = 0;
       counters[ingredient._id]++;
     });
-    if (bun) counters[bun._id] = 2;
+    bun._id.forEach((id) => (counters[id] = 2));
+
     return counters;
   }, [burgerConstructor]);
 
