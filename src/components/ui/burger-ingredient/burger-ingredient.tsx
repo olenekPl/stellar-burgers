@@ -10,7 +10,7 @@ import {
 
 import { TBurgerIngredientUIProps } from './type';
 import { useDispatch } from '../../../services/store';
-import { setIngridientToModal } from '../../../services/burgerSlice';
+import { setIngredientToModal } from '../../../services/ingredientsSlice';
 
 export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
   ({ ingredient, count, handleAdd, locationState }) => {
@@ -19,7 +19,7 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
     return (
       <li className={styles.container}>
         <Link
-          onClick={() => dispatch(setIngridientToModal(_id))}
+          onClick={() => dispatch(setIngredientToModal(_id))}
           className={styles.article}
           to={`/ingredients/${_id}`}
           state={locationState}

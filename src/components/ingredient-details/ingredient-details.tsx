@@ -5,7 +5,9 @@ import { useSelector } from '../../services/store';
 
 export const IngredientDetails: FC = () => {
   /** TODO: взять переменную из стора */
-  const ingredientData = useSelector((state) => state.burgers.ingredientData);
+  const ingredientData = useSelector(
+    (state) => state.ingredients.ingredientData
+  );
 
   if (!ingredientData) {
     return <Preloader />;

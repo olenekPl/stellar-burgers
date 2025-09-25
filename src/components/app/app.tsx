@@ -23,12 +23,9 @@ import {
 } from 'react-router-dom';
 import { ReactNode, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import {
-  getFeedsThunk,
-  getIngredientsThunk,
-  getOrdersThunk
-} from '../../services/burgerSlice';
-import { getUserThunk } from '../../services/authSlice';
+import { getIngredientsThunk } from '../../services/ingredientsSlice';
+import { getFeedsThunk } from '../../services/ordersSlice';
+import { getOrdersThunk, getUserThunk } from '../../services/authSlice';
 
 interface ProtectedRouteProps {
   children: ReactNode;

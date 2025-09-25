@@ -6,9 +6,8 @@ import { BurgerIngredientsUI } from '../ui/burger-ingredients';
 import { useSelector } from '../../services/store';
 
 export const BurgerIngredients: FC = () => {
-  const ingredients = useSelector((state) => state.burgers.ingridients);
+  const ingredients = useSelector((state) => state.ingredients.ingredients);
   /** TODO: взять переменные из стора */
-
   const buns: Array<TIngredient> = ingredients.filter(
     (ing) => ing.type === 'bun'
   );

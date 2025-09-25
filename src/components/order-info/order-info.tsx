@@ -10,11 +10,11 @@ export const OrderInfo: FC = () => {
   const location = useLocation();
   const orderData =
     location.pathname === '/profile/orders/:number'
-      ? useSelector((state) => state.burgers.myOrderModalData)
-      : useSelector((state) => state.burgers.orderData);
+      ? useSelector((state) => state.auth.myOrderModalData)
+      : useSelector((state) => state.orders.orderData);
 
   const ingredients: TIngredient[] = useSelector(
-    (state) => state.burgers.ingridients
+    (state) => state.ingredients.ingredients
   );
 
   /* готовим данные для отображения */

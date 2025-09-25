@@ -1,5 +1,5 @@
 import React, { FC, memo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   CurrencyIcon,
   FormattedDate
@@ -10,11 +10,12 @@ import styles from './order-card.module.css';
 import { OrderCardUIProps } from './type';
 import { OrderStatus } from '@components';
 import { useDispatch } from '../../../services/store';
-import { setOrderToModal } from '../../../services/burgerSlice';
+import { setOrderToModal } from '../../../services/ordersSlice';
 
 export const OrderCardUI: FC<OrderCardUIProps> = memo(
   ({ orderInfo, maxIngredients, locationState }) => {
     const dispatch = useDispatch();
+    const location = useLocation();
     return (
       <Link
         onClick={() => dispatch(setOrderToModal(orderInfo.number))}

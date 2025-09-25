@@ -12,8 +12,8 @@ const getOrders = (orders: TOrder[], status: string): number[] =>
 
 export const FeedInfo: FC = () => {
   /** TODO: взять переменные из стора */
-  const orders: TOrder[] = useSelector((state) => state.burgers.orders);
-  const feed = useSelector((state) => state.burgers.feed);
+  const orders: TOrder[] = useSelector((state) => state.orders.orders);
+  const feed = useSelector((state) => state.orders.feed);
 
   const readyOrders = getOrders(orders, 'done');
 
