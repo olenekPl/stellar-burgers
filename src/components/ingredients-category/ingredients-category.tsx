@@ -2,11 +2,18 @@ import { forwardRef, useMemo } from 'react';
 import { TIngredientsCategoryProps } from './type';
 import { TIngredient } from '@utils-types';
 import { IngredientsCategoryUI } from '../ui/ingredients-category';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from '../../services/store';
+import { setIngredientToModal } from '../../services/ingredientsSlice';
 
 export const IngredientsCategory = forwardRef<
   HTMLUListElement,
   TIngredientsCategoryProps
 >(({ title, titleRef, ingredients }, ref) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+
   /** TODO: взять переменную из стора */
   let bunsId: string[] = [];
   if (title === 'Булки') {
@@ -33,6 +40,14 @@ export const IngredientsCategory = forwardRef<
     return counters;
   }, [burgerConstructor]);
 
+  // Обработчик клика по ингредиенту
+  const handleIngredientClick = (ingredient: TIngredient) => {
+    dispatch(setIngredientToModal(ingredient._id));
+    navigate(`/ingredients/${ingredient._id}`, {
+      state: { background: location }
+    });
+  };
+
   return (
     <IngredientsCategoryUI
       title={title}
@@ -40,6 +55,7 @@ export const IngredientsCategory = forwardRef<
       ingredients={ingredients}
       ingredientsCounters={ingredientsCounters}
       ref={ref}
+      onIngredientClick={handleIngredientClick}
     />
   );
 });

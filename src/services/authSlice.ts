@@ -2,6 +2,7 @@ import {
   forgotPasswordApi,
   getOrdersApi,
   getUserApi,
+  getOrderByNumberApi,
   loginUserApi,
   logoutApi,
   registerUserApi,
@@ -17,6 +18,11 @@ import { setCookie } from '../utils/cookie';
 export const getOrdersThunk = createAsyncThunk(
   'auth/getOrdersThunk',
   async () => getOrdersApi()
+);
+
+export const getMyOrderByNumberThunk = createAsyncThunk(
+  'auth/getMyOrderByNumber',
+  async (number: number) => getOrderByNumberApi(number)
 );
 
 export const getUserThunk = createAsyncThunk('auth/getUserThunk', async () =>
@@ -163,6 +169,18 @@ const authSlice = createSlice({
       .addCase(getOrdersThunk.fulfilled, (state, action) => {
         state.loginUserRequest = false;
         state.myOrders = action.payload;
+      });
+    builder
+      .addCase(getMyOrderByNumberThunk.pending, (state) => {
+        state.loginUserRequest = true;
+      })
+      .addCase(getMyOrderByNumberThunk.fulfilled, (state, action) => {
+        state.loginUserRequest = false;
+        state.myOrderModalData = action.payload.orders[0];
+      })
+      .addCase(getMyOrderByNumberThunk.rejected, (state, action) => {
+        state.loginUserRequest = false;
+        state.loginUserError = action.error.message;
       });
   }
 });
