@@ -1,23 +1,40 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useSelector, useDispatch } from '../../services/store';
+import { useParams, useLocation } from 'react-router-dom';
+import { getOrderByNumberThunk } from '../../services/ordersSlice';
+import { getMyOrderByNumberThunk } from '../../services/authSlice';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { number } = useParams();
+  const orderNumber = number ? parseInt(number) : null;
 
-  const ingredients: TIngredient[] = [];
+  const isProfileOrder = location.pathname.includes('/profile/orders/');
 
-  /* Готовим данные для отображения */
+  const orderData = useSelector((state) =>
+    isProfileOrder ? state.auth.myOrderModalData : state.orders.orderData
+  );
+
+  const ingredients: TIngredient[] = useSelector(
+    (state) => state.ingredients.ingredients
+  );
+
+  // Загружаем данные заказа при монтировании или изменении номера
+  useEffect(() => {
+    if (orderNumber) {
+      if (isProfileOrder) {
+        dispatch(getMyOrderByNumberThunk(orderNumber));
+      } else {
+        dispatch(getOrderByNumberThunk(orderNumber));
+      }
+    }
+  }, [dispatch, orderNumber, isProfileOrder]);
+
+  /* готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
