@@ -1,79 +1,56 @@
-import { createSlice, nanoid, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TConstructorIngredient, TIngredient } from '@utils-types';
 
 type TConstructorState = {
-  constructorItems: {
-    bun: TIngredient | null;
-    ingredients: TConstructorIngredient[];
-  };
+  bun: TIngredient | null;
+  ingredients: TConstructorIngredient[];
 };
 
-const initialState: TConstructorState = {
-  constructorItems: {
-    bun: null,
-    ingredients: []
-  }
+export const initialState: TConstructorState = {
+  bun: null,
+  ingredients: []
 };
 
-const constructorSlice = createSlice({
+export const constructorSlice = createSlice({
   name: 'constructor',
   initialState,
   reducers: {
-    addIngredientToConstructor: {
-      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
-        if (action.payload.type === 'bun') {
-          state.constructorItems.bun = action.payload;
-          return;
-        }
-        state.constructorItems.ingredients.push(action.payload);
-      },
-      prepare: (ingredient: TIngredient) => ({
-        payload: {
-          ...ingredient,
-          id: nanoid()
-        } as TConstructorIngredient
-      })
+    addBun(state, action: PayloadAction<TIngredient | null>) {
+      state.bun = action.payload;
     },
-    moveIngredientUp: (state, action: PayloadAction<number>) => {
-      const index = action.payload;
-      if (index > 0) {
-        const [ingredient] = state.constructorItems.ingredients.splice(
-          index,
-          1
-        );
-        state.constructorItems.ingredients.splice(index - 1, 0, ingredient);
-      }
+    addIngredient(state, action) {
+      const newPayload = { ...action.payload, id: +new Date() };
+      state.ingredients.push(newPayload);
     },
-    moveIngredientDown: (state, action: PayloadAction<number>) => {
-      const index = action.payload;
-      if (index < state.constructorItems.ingredients.length - 1) {
-        const [ingredient] = state.constructorItems.ingredients.splice(
-          index,
-          1
-        );
-        state.constructorItems.ingredients.splice(index + 1, 0, ingredient);
-      }
+    removeIngredient(state, action) {
+      state.ingredients = state.ingredients.filter(
+        (item) => item.id !== action.payload.id
+      );
     },
-    deleteIngredient: (state, action: PayloadAction<string>) => {
-      state.constructorItems.ingredients =
-        state.constructorItems.ingredients.filter(
-          (ingredient) => ingredient.id !== action.payload
-        );
+    moveUpIngredient(state, action) {
+      const tempIngredient = state.ingredients[action.payload];
+      state.ingredients[action.payload] = state.ingredients[action.payload - 1];
+      state.ingredients[action.payload - 1] = tempIngredient;
     },
-    resetConstructor: (state) => {
-      state.constructorItems = {
-        bun: null,
-        ingredients: []
-      };
+    moveDownIngredient(state, action) {
+      const tempIngredient = state.ingredients[action.payload];
+      state.ingredients[action.payload] = state.ingredients[action.payload + 1];
+      state.ingredients[action.payload + 1] = tempIngredient;
+    },
+    resetConstructor(state) {
+      state.bun = null;
+      state.ingredients = [];
     }
   }
 });
 
-export const constructorReducer = constructorSlice.reducer;
 export const {
-  addIngredientToConstructor,
-  moveIngredientUp,
-  moveIngredientDown,
-  deleteIngredient,
+  addBun,
+  addIngredient,
+  removeIngredient,
+  moveUpIngredient,
+  moveDownIngredient,
   resetConstructor
 } = constructorSlice.actions;
+
+export default constructorSlice.reducer;

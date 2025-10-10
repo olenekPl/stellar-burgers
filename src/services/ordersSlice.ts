@@ -1,91 +1,121 @@
-import { getFeedsApi, getOrderByNumberApi, orderBurgerApi } from '@api';
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSlice,
+  SerializedError,
+  PayloadAction
+} from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
-
-export const getFeedsThunk = createAsyncThunk('orders/getFeeds', async () =>
-  getFeedsApi()
-);
-
-export const orderBurgerThunk = createAsyncThunk(
-  'orders/orderBurger',
-  async (data: string[]) => orderBurgerApi(data)
-);
-
-export const getOrderByNumberThunk = createAsyncThunk(
-  'orders/getOrderByNumber',
-  async (number: number) => getOrderByNumberApi(number)
-);
+import {
+  getOrderByNumberApi,
+  getOrdersApi,
+  orderBurgerApi
+} from '../utils/burger-api';
 
 type TOrdersState = {
-  feed: any;
-  orders: TOrder[];
-  loading: boolean;
+  isOrderLoading: boolean;
+  isOrdersLoading: boolean;
   orderRequest: boolean;
-  orderData: TOrder | undefined;
+  orderModalData: TOrder | null;
+  error: null | SerializedError;
+  data: TOrder[];
 };
 
-const initialState: TOrdersState = {
-  feed: {},
-  orders: [],
-  loading: false,
+export const initialState: TOrdersState = {
+  isOrderLoading: true,
+  isOrdersLoading: true,
   orderRequest: false,
-  orderData: undefined
+  orderModalData: null,
+  error: null,
+  data: []
 };
 
-const ordersSlice = createSlice({
-  name: 'orders',
+export const getOrders = createAsyncThunk<TOrder[]>(
+  'order/getOrders',
+  async (): Promise<TOrder[]> => await getOrdersApi()
+);
+
+export const createOrder = createAsyncThunk<
+  {
+    order: TOrder;
+    name: string;
+  },
+  string[]
+>('order/createOrder', async (data, { rejectWithValue }) => {
+  const response = await orderBurgerApi(data);
+  if (!response?.success) {
+    return rejectWithValue(response);
+  }
+  return { order: response.order, name: response.name };
+});
+
+export const getOrder = createAsyncThunk<TOrder, number>(
+  'order/getOrder',
+  async (data, { rejectWithValue }) => {
+    const response = await getOrderByNumberApi(data);
+    if (!response?.success) {
+      return rejectWithValue(response);
+    }
+    return response.orders[0];
+  }
+);
+
+export const orderSlice = createSlice({
+  name: 'order',
   initialState,
   reducers: {
-    setOrderToModal: (state, action: PayloadAction<number>) => {
-      state.orderData = state.orders.find(
-        (order) => order.number === action.payload
-      );
+    resetOrderModalData(state) {
+      state.orderModalData = null;
     },
-    clearOrderModal: (state) => {
-      state.orderData = undefined;
+    setOrderToModal(state, action: PayloadAction<number>) {
+      // Создаем временный объект заказа с номером для модального окна
+      state.orderModalData = {
+        number: action.payload,
+        _id: 'temp',
+        ingredients: [],
+        status: 'pending',
+        name: 'Загрузка...',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      } as TOrder;
     }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getFeedsThunk.pending, (state) => {
-        state.loading = true;
+      .addCase(getOrder.pending, (state) => {
+        state.isOrderLoading = true;
       })
-      .addCase(getFeedsThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.feed = action.payload;
-        state.orders = action.payload.orders;
+      .addCase(getOrder.fulfilled, (state, action) => {
+        state.isOrderLoading = false;
+        state.orderModalData = action.payload;
       })
-      .addCase(getFeedsThunk.rejected, (state) => {
-        state.loading = false;
-      });
-
-    builder
-      .addCase(orderBurgerThunk.pending, (state) => {
-        state.loading = true;
+      .addCase(getOrder.rejected, (state) => {
+        state.isOrderLoading = false;
+      })
+      .addCase(getOrders.pending, (state) => {
+        state.isOrdersLoading = true;
+        state.error = null;
+      })
+      .addCase(getOrders.fulfilled, (state, action) => {
+        state.isOrdersLoading = false;
+        state.error = null;
+        state.data = action.payload;
+      })
+      .addCase(getOrders.rejected, (state, action) => {
+        state.isOrdersLoading = false;
+        state.error = action.error;
+      })
+      .addCase(createOrder.pending, (state) => {
         state.orderRequest = true;
       })
-      .addCase(orderBurgerThunk.rejected, (state) => {
-        state.loading = false;
+      .addCase(createOrder.fulfilled, (state, action) => {
         state.orderRequest = false;
+        state.orderModalData = action.payload.order;
       })
-      .addCase(orderBurgerThunk.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(createOrder.rejected, (state, action) => {
         state.orderRequest = false;
-      });
-
-    builder
-      .addCase(getOrderByNumberThunk.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(getOrderByNumberThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.orderData = action.payload.orders[0];
-      })
-      .addCase(getOrderByNumberThunk.rejected, (state) => {
-        state.loading = false;
       });
   }
 });
 
-export const ordersReducer = ordersSlice.reducer;
-export const { setOrderToModal, clearOrderModal } = ordersSlice.actions;
+export const { resetOrderModalData, setOrderToModal } = orderSlice.actions;
+export default orderSlice.reducer;
