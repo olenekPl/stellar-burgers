@@ -1,40 +1,31 @@
-import { FC, useMemo, useEffect } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
-import { useSelector, useDispatch } from '../../services/store';
-import { useParams, useLocation } from 'react-router-dom';
-import { getOrderByNumberThunk } from '../../services/ordersSlice';
-import { getMyOrderByNumberThunk } from '../../services/authSlice';
+import { useDispatch, useSelector } from '../../services/store';
+import { AppDispatch, RootState } from '../../services/store';
+import { getOrder } from '../../services/ordersSlice';
+import { useParams } from 'react-router-dom';
+import { getIngredient } from '../../services/ingredientsSlice';
 
 export const OrderInfo: FC = () => {
-  const dispatch = useDispatch();
-  const location = useLocation();
+  const dispatch: AppDispatch = useDispatch();
   const { number } = useParams();
-  const orderNumber = number ? parseInt(number) : null;
+  /** TODO: взять переменные orderData и ingredients из стора */
 
-  const isProfileOrder = location.pathname.includes('/profile/orders/');
-
-  const orderData = useSelector((state) =>
-    isProfileOrder ? state.auth.myOrderModalData : state.orders.orderData
+  const { isLoading: isIngredientsLoading, data: ingredients } = useSelector(
+    (state: RootState) => state.ingredientsReducer
   );
 
-  const ingredients: TIngredient[] = useSelector(
-    (state) => state.ingredients.ingredients
+  const { isOrderLoading, orderModalData: orderData } = useSelector(
+    (state: RootState) => state.orderReducer
   );
-
-  // Загружаем данные заказа при монтировании или изменении номера
   useEffect(() => {
-    if (orderNumber) {
-      if (isProfileOrder) {
-        dispatch(getMyOrderByNumberThunk(orderNumber));
-      } else {
-        dispatch(getOrderByNumberThunk(orderNumber));
-      }
-    }
-  }, [dispatch, orderNumber, isProfileOrder]);
+    dispatch(getOrder(Number(number)));
+    dispatch(getIngredient());
+  }, [dispatch]);
 
-  /* готовим данные для отображения */
+  /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -75,9 +66,12 @@ export const OrderInfo: FC = () => {
       total
     };
   }, [orderData, ingredients]);
+  if (isIngredientsLoading || isOrderLoading) {
+    return <Preloader />;
+  }
 
   if (!orderInfo) {
-    return <Preloader />;
+    return null;
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;

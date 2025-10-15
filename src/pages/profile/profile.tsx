@@ -1,12 +1,13 @@
 import { ProfileUI } from '@ui-pages';
 import { FC, SyntheticEvent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import { updateUserThunk } from '../../services/authSlice';
+import { AppDispatch, RootState } from '../../services/store';
+import { updateUser } from '../../services/userSlice';
 
 export const Profile: FC = () => {
   /** TODO: взять переменную из стора */
-  const user = useSelector((state) => state.auth.data);
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
+  const { data: user } = useSelector((store: RootState) => store.userReducer);
 
   const [formValue, setFormValue] = useState({
     name: user.name,
@@ -29,7 +30,7 @@ export const Profile: FC = () => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(updateUserThunk(formValue));
+    dispatch(updateUser(formValue));
   };
 
   const handleCancel = (e: SyntheticEvent) => {

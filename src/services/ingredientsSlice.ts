@@ -1,52 +1,49 @@
-import { getIngredientsApi } from '@api';
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getIngredientsApi } from '../utils/burger-api';
+import {
+  createAsyncThunk,
+  createSlice,
+  SerializedError
+} from '@reduxjs/toolkit';
 import { TIngredient } from '@utils-types';
 
-export const getIngredientsThunk = createAsyncThunk(
-  'ingredients/getIngredients',
-  async () => getIngredientsApi()
+export const getIngredient = createAsyncThunk<TIngredient[], void>(
+  'ingredients/getIngredient',
+  async (): Promise<TIngredient[]> => await getIngredientsApi()
 );
 
 type TIngredientsState = {
-  ingredients: TIngredient[];
-  loading: boolean;
-  ingredientData: TIngredient | undefined;
+  isLoading: boolean;
+  error: null | SerializedError;
+  data: TIngredient[];
 };
 
-const initialState: TIngredientsState = {
-  ingredients: [],
-  loading: false,
-  ingredientData: undefined
+export const initialState: TIngredientsState = {
+  isLoading: true,
+  error: null,
+  data: []
 };
 
-const ingredientsSlice = createSlice({
+export const ingredientsSlice = createSlice({
   name: 'ingredients',
   initialState,
-  reducers: {
-    setIngredientToModal: (state, action: PayloadAction<string>) => {
-      state.ingredientData = state.ingredients.find(
-        (el) => el._id === action.payload
-      );
-    },
-    clearIngredientModal: (state) => {
-      state.ingredientData = undefined;
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getIngredientsThunk.pending, (state) => {
-        state.loading = true;
+      .addCase(getIngredient.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
       })
-      .addCase(getIngredientsThunk.fulfilled, (state, action) => {
-        state.loading = false;
-        state.ingredients = action.payload;
+      .addCase(getIngredient.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.data = action.payload;
       })
-      .addCase(getIngredientsThunk.rejected, (state) => {
-        state.loading = false;
+      .addCase(getIngredient.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error;
       });
   }
 });
 
-export const ingredientsReducer = ingredientsSlice.reducer;
-export const { setIngredientToModal, clearIngredientModal } =
-  ingredientsSlice.actions;
+export const {} = ingredientsSlice.actions;
+export default ingredientsSlice.reducer;

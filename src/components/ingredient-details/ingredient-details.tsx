@@ -1,26 +1,23 @@
 import { FC, useEffect } from 'react';
 import { Preloader } from '../ui/preloader';
 import { IngredientDetailsUI } from '../ui/ingredient-details';
+import { TIngredient } from '@utils-types';
 import { useDispatch, useSelector } from '../../services/store';
+import { AppDispatch, RootState } from '../../services/store';
+import { getIngredient } from '../../services/ingredientsSlice';
 import { useParams } from 'react-router-dom';
-import { setIngredientToModal } from '../../services/ingredientsSlice';
 
 export const IngredientDetails: FC = () => {
-  const dispatch = useDispatch();
-  const { id } = useParams(); // Получаем ID из URL
-
-  const ingredientData = useSelector(
-    (state) => state.ingredients.ingredientData
-  );
-
-  const ingredients = useSelector((state) => state.ingredients.ingredients);
-
-  // Загружаем данные ингредиента при монтировании или изменении ID
+  /** TODO: взять переменную из стора */
+  const { id } = useParams<{ id: string }>();
+  const dispatch: AppDispatch = useDispatch();
   useEffect(() => {
-    if (id && ingredients.length) {
-      dispatch(setIngredientToModal(id));
-    }
-  }, [dispatch, id, ingredients]);
+    dispatch(getIngredient());
+  }, []);
+  const ingredientStore: TIngredient[] = useSelector(
+    (state: RootState) => state.ingredientsReducer.data
+  );
+  const ingredientData = ingredientStore.find((item) => item._id === id);
 
   if (!ingredientData) {
     return <Preloader />;
